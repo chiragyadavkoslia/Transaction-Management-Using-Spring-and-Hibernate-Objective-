@@ -1,0 +1,28 @@
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class BankService {
+
+    @Autowired
+    private AccountDAO accountDAO;
+
+    @Transactional
+    public void transferMoney(int fromAccountId, int toAccountId, double amount) {
+        Account fromAcc = accountDAO.getAccountById(fromAccountId);
+        Account toAcc = accountDAO.getAccountById(toAccountId);
+
+        if (fromAcc.getBalance() < amount) {
+            throw new RuntimeException("Insufficient funds!");
+        }
+
+        fromAcc.setBalance(fromAcc.getBalance() - amount);
+        toAcc.setBalance(toAcc.getBalance() + amount);
+
+        accountDAO.updateAccount(fromAcc);
+        accountDAO.updateAccount(toAcc);
+
+        // Transaction record can also be added here
+    }
+}
