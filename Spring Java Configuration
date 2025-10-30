@@ -1,0 +1,46 @@
+import org.hibernate.SessionFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.orm.hibernate6.HibernateTransactionManager;
+import org.springframework.orm.hibernate6.LocalSessionFactoryBean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.sql.DataSource;
+import com.zaxxer.hikari.HikariDataSource;
+import java.util.Properties;
+
+@Configuration
+@EnableTransactionManagement
+@ComponentScan(basePackages = "com.bank")
+public class AppConfig {
+
+    @Bean
+    public DataSource dataSource() {
+        HikariDataSource ds = new HikariDataSource();
+        ds.setJdbcUrl("jdbc:mysql://localhost:3306/BankingDB");
+        ds.setUsername("root");
+        ds.setPassword("password");
+        return ds;
+    }
+
+    @Bean
+    public LocalSessionFactoryBean sessionFactory() {
+        LocalSessionFactoryBean sf = new LocalSessionFactoryBean();
+        sf.setDataSource(dataSource());
+        sf.setPackagesToScan("com.bank");
+        Properties hibernateProps = new Properties();
+        hibernateProps.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+        hibernateProps.put("hibernate.show_sql", "true");
+        hibernateProps.put("hibernate.hbm2ddl.auto", "update");
+        sf.setHibernateProperties(hibernateProps);
+        return sf;
+    }
+
+    @Bean
+    public HibernateTransactionManager transactionManager(SessionFactory sessionFactory) {
+        HibernateTransactionManager txManager = new HibernateTransactionManager();
+        txManager.setSessionFactory(sessionFactory);
+        return txManager;
+    }
+}
